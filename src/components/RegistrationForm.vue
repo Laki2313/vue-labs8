@@ -2,52 +2,37 @@
   <form @submit.prevent="handleSubmit" class="form">
     <h2>Реєстрація</h2>
 
-    <div>
-      <label>Ім'я:</label>
-      <input v-model.trim="form.name" type="text" />
-      <p v-if="errors.name" class="error">{{ errors.name }}</p>
-    </div>
+    <input v-model.trim="form.name" placeholder="Ім'я" />
+    <p v-if="errors.name" class="error">{{ errors.name }}</p>
 
-    <div>
-      <label>Email:</label>
-      <input v-model.trim="form.email" type="email" />
-      <p v-if="errors.email" class="error">{{ errors.email }}</p>
-    </div>
+    <input v-model.trim="form.email" placeholder="Email" />
+    <p v-if="errors.email" class="error">{{ errors.email }}</p>
 
-    <div>
-      <label>Пароль:</label>
-      <input v-model="form.password" type="password" />
-      <p v-if="errors.password" class="error">{{ errors.password }}</p>
-    </div>
+    <input type="password" v-model="form.password" placeholder="Пароль" />
+    <p v-if="errors.password" class="error">{{ errors.password }}</p>
 
-    <div>
-      <label>Підтвердження пароля:</label>
-      <input v-model="form.confirmPassword" type="password" />
-      <p v-if="errors.confirmPassword" class="error">
-        {{ errors.confirmPassword }}
-      </p>
-    </div>
+    <input type="password" v-model="form.confirmPassword" placeholder="Підтвердіть пароль" />
+    <p v-if="errors.confirmPassword" class="error">{{ errors.confirmPassword }}</p>
 
-    <div>
-      <label>Вік:</label>
-      <input v-model.number="form.age" type="number" />
-      <p v-if="errors.age" class="error">{{ errors.age }}</p>
-    </div>
+    <input type="number" v-model.number="form.age" placeholder="Вік" />
+    <p v-if="errors.age" class="error">{{ errors.age }}</p>
 
-    <div>
-      <label>
-        <input v-model="form.agree" type="checkbox" />
-        Погоджуюсь з умовами
-      </label>
-      <p v-if="errors.agree" class="error">{{ errors.agree }}</p>
-    </div>
+    <label>
+      <input type="checkbox" v-model="form.agree" />
+      Погоджуюсь з умовами
+    </label>
+    <p v-if="errors.agree" class="error">{{ errors.agree }}</p>
 
-    <button type="submit">Зареєструватися</button>
+    <button :disabled="isSubmitting">
+      {{ isSubmitting ? 'Відправка...' : 'Зареєструватись' }}
+    </button>
+
+    <p v-if="success" class="success">✅ Успішна реєстрація!</p>
   </form>
 </template>
 
 <script>
-import { reactive } from 'vue'
+import { reactive, ref, watch } from 'vue'
 
 export default {
   setup() {
@@ -61,23 +46,22 @@ export default {
     })
 
     const errors = reactive({})
+    const isSubmitting = ref(false)
+    const success = ref(false)
 
     const validate = () => {
-
       Object.keys(errors).forEach(key => delete errors[key])
 
-      if (!form.name) {
-        errors.name = "Введіть ім'я"
-      }
+      if (!form.name) errors.name = "Ім'я обов'язкове"
 
       if (!form.email) {
-        errors.email = "Введіть email"
+        errors.email = "Email обов'язковий"
       } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-        errors.email = "Некоректний email"
+        errors.email = "Невірний формат email"
       }
 
       if (!form.password) {
-        errors.password = "Введіть пароль"
+        errors.password = "Пароль обов'язковий"
       } else if (form.password.length < 6) {
         errors.password = "Мінімум 6 символів"
       }
@@ -86,10 +70,8 @@ export default {
         errors.confirmPassword = "Паролі не співпадають"
       }
 
-      if (!form.age) {
-        errors.age = "Введіть вік"
-      } else if (form.age < 16) {
-        errors.age = "Мінімум 16 років"
+      if (!form.age || form.age < 16) {
+        errors.age = "Мінімальний вік 16"
       }
 
       if (!form.agree) {
@@ -100,17 +82,42 @@ export default {
     }
 
     const handleSubmit = () => {
-      if (validate()) {
-        console.log('Форма валідна ✅', form)
-      } else {
-        console.log('Є помилки ❌')
-      }
+      success.value = false
+
+      if (!validate()) return
+
+      isSubmitting.value = true
+
+      setTimeout(() => {
+        isSubmitting.value = false
+        success.value = true
+
+
+        Object.assign(form, {
+          name: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+          age: null,
+          agree: false
+        })
+      }, 1500)
     }
+
+    watch(form, (newVal) => {
+      for (let key in newVal) {
+        if (newVal[key]) {
+          delete errors[key]
+        }
+      }
+    }, { deep: true })
 
     return {
       form,
       errors,
-      handleSubmit
+      handleSubmit,
+      isSubmitting,
+      success
     }
   }
 }
@@ -119,27 +126,35 @@ export default {
 <style>
 .form {
   max-width: 400px;
-  margin: 30px auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-}
-
-.form div {
-  margin-bottom: 12px;
+  margin: 50px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 input {
-  width: 100%;
-  padding: 6px;
+  padding: 8px;
 }
 
 button {
-  margin-top: 10px;
-  padding: 8px 15px;
+  padding: 10px;
+  background: #42b983;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: gray;
 }
 
 .error {
   color: red;
-  font-size: 13px;
+  font-size: 12px;
+}
+
+.success {
+  color: green;
+  margin-top: 10px;
 }
 </style>
