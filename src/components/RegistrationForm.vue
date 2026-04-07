@@ -3,31 +3,47 @@
     <h2>Реєстрація</h2>
 
     <input v-model.trim="form.name" placeholder="Ім'я" />
-    <p v-if="errors.name" class="error">{{ errors.name }}</p>
+    <Transition name="fade">
+      <p v-if="errors.name" class="error">{{ errors.name }}</p>
+    </Transition>
 
     <input v-model.trim="form.email" placeholder="Email" />
-    <p v-if="errors.email" class="error">{{ errors.email }}</p>
+    <Transition name="fade">
+      <p v-if="errors.email" class="error">{{ errors.email }}</p>
+    </Transition>
 
     <input type="password" v-model="form.password" placeholder="Пароль" />
-    <p v-if="errors.password" class="error">{{ errors.password }}</p>
+    <Transition name="fade">
+      <p v-if="errors.password" class="error">{{ errors.password }}</p>
+    </Transition>
 
     <input type="password" v-model="form.confirmPassword" placeholder="Підтвердіть пароль" />
-    <p v-if="errors.confirmPassword" class="error">{{ errors.confirmPassword }}</p>
+    <Transition name="fade">
+      <p v-if="errors.confirmPassword" class="error">{{ errors.confirmPassword }}</p>
+    </Transition>
 
     <input type="number" v-model.number="form.age" placeholder="Вік" />
-    <p v-if="errors.age" class="error">{{ errors.age }}</p>
+    <Transition name="fade">
+      <p v-if="errors.age" class="error">{{ errors.age }}</p>
+    </Transition>
 
-    <label>
+    <label class="checkbox">
       <input type="checkbox" v-model="form.agree" />
       Погоджуюсь з умовами
     </label>
-    <p v-if="errors.agree" class="error">{{ errors.agree }}</p>
+    <Transition name="fade">
+      <p v-if="errors.agree" class="error">{{ errors.agree }}</p>
+    </Transition>
 
     <button :disabled="isSubmitting">
       {{ isSubmitting ? 'Відправка...' : 'Зареєструватись' }}
     </button>
 
-    <p v-if="success" class="success">✅ Успішна реєстрація!</p>
+    <Transition name="fade">
+      <p v-if="success" class="success">
+        ✅ Успішна реєстрація!
+      </p>
+    </Transition>
   </form>
 </template>
 
@@ -52,7 +68,9 @@ export default {
     const validate = () => {
       Object.keys(errors).forEach(key => delete errors[key])
 
-      if (!form.name) errors.name = "Ім'я обов'язкове"
+      if (!form.name) {
+        errors.name = "Ім'я обов'язкове"
+      }
 
       if (!form.email) {
         errors.email = "Email обов'язковий"
@@ -92,7 +110,6 @@ export default {
         isSubmitting.value = false
         success.value = true
 
-
         Object.assign(form, {
           name: '',
           email: '',
@@ -130,22 +147,41 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #f9f9f9;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 input {
-  padding: 8px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 button {
   padding: 10px;
+  border: none;
+  border-radius: 6px;
   background: #42b983;
   color: white;
-  border: none;
   cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #369870;
 }
 
 button:disabled {
   background: gray;
+  cursor: not-allowed;
 }
 
 .error {
@@ -156,5 +192,21 @@ button:disabled {
 .success {
   color: green;
   margin-top: 10px;
+  font-weight: bold;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
 }
 </style>
